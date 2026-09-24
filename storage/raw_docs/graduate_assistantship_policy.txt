@@ -1,0 +1,16 @@
+=== ACADEMIC INSTITUTION POLICY DOCUMENT ===
+DOCUMENT TITLE: Graduate Assistantship & Research Regulations
+DOCUMENT TYPE: faculty_policy
+EFFECTIVE DATE: Fall Semester 2025
+VERSION: 3.0
+INSTITUTION: Apex Academic University
+
+SECTION 1: ASSISTANTSHIP WORKLOAD & CGPA REQUIREMENT
+1.1 Graduate Teaching Assistants (GTAs) and Research Assistants (GRAs) must enroll in at least 9 credit hours per semester.
+1.2 The maximum allowable workload for a Graduate Assistant appointment is 20 hours per week during regular Fall/Spring semesters.
+1.3 Graduate Assistants must maintain a minimum Cumulative GPA of 3.25. If CGPA drops below 3.25, the assistantship is placed on conditional probation for one semester.
+
+SECTION 2: STIPEND & TUITION REMISSION BENEFITS
+2.1 Full-time 20-hour Graduate Assistantships include a minimum monthly stipend of $2,200 plus 100% full tuition remission for up to 12 graduate credit hours.
+2.2 Mandatory university student fees (health fee, technology fee, activity fee) are not covered by tuition remission and remain the student's personal responsibility.
+2.3 Tuition remission benefits are credited within 10 business days following the execution of the Assistantship Contract.

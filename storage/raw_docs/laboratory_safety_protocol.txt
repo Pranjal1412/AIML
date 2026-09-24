@@ -1,0 +1,15 @@
+=== ACADEMIC INSTITUTION POLICY DOCUMENT ===
+DOCUMENT TITLE: Laboratory Safety Protocols and Hazardous Waste Management
+DOCUMENT TYPE: general_handbook
+EFFECTIVE DATE: Fall Semester 2025
+VERSION: 3.0
+INSTITUTION: Apex Academic University
+
+SECTION 1: MANDATORY PERSONAL PROTECTIVE EQUIPMENT (PPE)
+1.1 All students, researchers, and instructors entering wet laboratories must wear ANSI-approved safety goggles, chemical-resistant lab coats, and closed-toe shoes.
+1.2 Shorts, sandals, loose jewelry, and unconfined long hair are strictly prohibited in chemical and biological containment laboratories.
+1.3 Emergency eyewash stations and safety showers must be inspected monthly. In case of chemical contact, flush affected areas for a minimum of 15 continuous minutes.
+
+SECTION 2: HAZARDOUS CHEMICAL DISPOSAL
+2.1 Chemical waste must never be poured down laboratory sinks or drains. Waste must be segregated into clearly labeled hazardous waste containers.
+2.2 Chemical waste collection requests must be submitted to the Environmental Health & Safety (EHS) office when containers reach 80% capacity.

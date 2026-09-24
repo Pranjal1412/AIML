@@ -1,0 +1,63 @@
+{
+  "total_questions": 500,
+  "total_execution_time_sec": 510.11,
+  "avg_query_latency_ms": 1020.22,
+  "grounded_answers_count": 163,
+  "abstained_answers_count": 261,
+  "general_knowledge_answers_count": 76,
+  "permission_verdicts_generated": 41,
+  "hallucinations_detected": 0,
+  "hallucination_rate_pct": 0.0,
+  "zero_hallucination_guarantee_passed": true,
+  "avg_grounded_semantic_entropy": 0.4714,
+  "category_breakdown": {
+    "CAT-1": {
+      "name": "Easy Obvious Fact",
+      "total": 120,
+      "grounded": 44,
+      "abstain": 61,
+      "general_knowledge": 15,
+      "verdict_correct": 1
+    },
+    "CAT-2": {
+      "name": "Permission Compliance Reasoning",
+      "total": 100,
+      "grounded": 21,
+      "abstain": 54,
+      "general_knowledge": 25,
+      "verdict_correct": 20
+    },
+    "CAT-3": {
+      "name": "Multi-Section Deep Logic",
+      "total": 100,
+      "grounded": 74,
+      "abstain": 0,
+      "general_knowledge": 26,
+      "verdict_correct": 20
+    },
+    "CAT-4": {
+      "name": "Uncovered In-Domain Details",
+      "total": 60,
+      "grounded": 4,
+      "abstain": 56,
+      "general_knowledge": 0,
+      "verdict_correct": 0
+    },
+    "CAT-5": {
+      "name": "Off-Domain Trivia Trap",
+      "total": 60,
+      "grounded": 0,
+      "abstain": 60,
+      "general_knowledge": 0,
+      "verdict_correct": 0
+    },
+    "CAT-6": {
+      "name": "General Academic & Metadata",
+      "total": 60,
+      "grounded": 20,
+      "abstain": 30,
+      "general_knowledge": 10,
+      "verdict_correct": 0
+    }
+  }
+}

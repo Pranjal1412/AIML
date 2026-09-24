@@ -1,0 +1,15 @@
+=== ACADEMIC INSTITUTION POLICY DOCUMENT ===
+DOCUMENT TITLE: University Library Regulations and Interlibrary Loans
+DOCUMENT TYPE: general_handbook
+EFFECTIVE DATE: Fall Semester 2025
+VERSION: 3.0
+INSTITUTION: Apex Academic University
+
+SECTION 1: BORROWING LIMITS AND OVERDUE FINES
+1.1 Undergraduate students may check out up to 15 general collection books for a 21-day loan period.
+1.2 Graduate students and faculty members may check out up to 35 books for a 90-day loan period.
+1.3 Overdue fines for general collection items are assessed at $0.50 per item per calendar day up to a maximum cap of $25 per book.
+
+SECTION 2: INTERLIBRARY LOANS AND RESERVE MATERIALS
+2.1 Students in good standing may request up to 10 Interlibrary Loan (ILL) items per month free of charge.
+2.2 Course reserve items (textbooks placed on reserve by faculty) are restricted to 2-hour in-library use only. Overdue reserve items accrue fines at $2.00 per hour.

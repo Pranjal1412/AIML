@@ -1,0 +1,16 @@
+=== ACADEMIC INSTITUTION POLICY DOCUMENT ===
+DOCUMENT TITLE: Student Code of Conduct and Disciplinary Rules
+DOCUMENT TYPE: code_of_conduct
+EFFECTIVE DATE: Fall Semester 2025
+VERSION: 3.0
+INSTITUTION: Apex Academic University
+
+SECTION 1: ACADEMIC MISCONDUCT AND PLAGIARISM
+1.1 Academic dishonesty includes plagiarism, unauthorized collaboration, fabrication of data, and cheating during examinations.
+1.2 Plagiarism is defined as submitting work containing more than 15% uncredited similarity to external published or electronic sources.
+1.3 Penalties for plagiarism: First Offense: Zero marks on the assignment and a formal written warning placed in the student file. Second Offense: Automatic grade 'F' in the course. Third Offense: Formal referral to the Disciplinary Committee for university suspension or expulsion.
+
+SECTION 2: CAMPUS BEHAVIOR AND DISCIPLINARY SUSPENSION
+2.1 All university members have the right to a safe, respectful learning environment free from harassment, discrimination, or intimidation.
+2.2 The following situations result in immediate disciplinary suspension or expulsion: physical assault or threats of violence on campus, illegal substance distribution, unauthorized forced entry into university server rooms or administrative offices, and deliberate destruction or vandalism of university property exceeding $500.
+2.3 Destruction or vandalism of university property requires full financial restitution in addition to suspension sanctions.

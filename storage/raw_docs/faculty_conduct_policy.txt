@@ -1,0 +1,21 @@
+=== ACADEMIC INSTITUTION POLICY DOCUMENT ===
+DOCUMENT TITLE: Faculty Code of Conduct and Professional Responsibilities
+DOCUMENT TYPE: faculty_policy
+EFFECTIVE DATE: Fall Semester 2025
+VERSION: 3.0
+INSTITUTION: Apex Academic University
+
+SECTION 1: OFFICE HOURS AND STUDENT CONSULTATION
+1.1 Full-time faculty members must hold a minimum of 4 scheduled office hours per week dedicated to student advisement and course consultation.
+1.2 Office hours must be posted on the course syllabus and uploaded to the Learning Management System (LMS) within the first week of the semester.
+1.3 Faculty members must respond to student emails and academic inquiries within 48 business hours.
+
+SECTION 2: SYLLABUS DISTRIBUTION AND EVALUATION CRITERIA
+2.1 Faculty members are required to distribute a comprehensive course syllabus during the first class session of the semester.
+2.2 The syllabus must clearly define grading criteria, examination schedules, assignment deadlines, and attendance rules.
+2.3 Any modification to the grading weights or exam dates during the semester requires written approval from the Department Head and unanimous consent of enrolled students.
+
+SECTION 3: ACADEMIC INTEGRITY AND GRADING TIMELINES
+3.1 Faculty members must evaluate and return mid-term examination results and feedback within 10 business days of exam completion.
+3.2 All cases of suspected academic misconduct, plagiarism, or exam cheating must be formally reported to the University Disciplinary Committee within 3 business days with supporting evidence.
+3.3 Faculty are strictly prohibited from accepting personal gifts valued over $25 from current students to prevent conflict of interest.

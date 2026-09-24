@@ -1,0 +1,21 @@
+=== ACADEMIC INSTITUTION POLICY DOCUMENT ===
+DOCUMENT TITLE: Student Attendance Policy and Absence Regulations
+DOCUMENT TYPE: attendance_policy
+EFFECTIVE DATE: Fall Semester 2025
+VERSION: 3.0
+INSTITUTION: Apex Academic University
+
+SECTION 1: MANDATORY ATTENDANCE REQUIREMENTS
+1.1 Students enrolled in undergraduate and postgraduate programs are expected to attend all scheduled lectures, tutorials, laboratory sessions, and seminars.
+1.2 A minimum cumulative attendance of 75% across all registered courses in a semester is strictly mandatory to maintain academic eligibility.
+1.3 Students falling between 65% and 74% attendance due to documented medical conditions or institutional representation must submit a formal condonation request to the Academic Dean within 5 working days of the absence.
+
+SECTION 2: ABSENCE LIMITS AND COURSE WITHDRAWAL
+2.1 If a student exceeds 6 consecutive unexcused absences in a single course, the Course Instructor is required to submit an Academic Advisory Warning to the Registrar.
+2.2 If a student's total attendance in a course drops below 60%, the student is automatically withdrawn from the course with a grade of 'W/F' (Withdrawn/Failed) and is ineligible to sit for the End-Semester Examination for that course.
+2.3 Maximum allowable medical leave in a single semester is 14 calendar days, subject to verified medical certification from an empaneled university physician.
+
+SECTION 3: APPEALS AND CONDONATION PROCEDURE
+3.1 Condonation for attendance shortage up to 10% may be granted by the Academic Dean upon payment of a condonation fee of $50 per course and submission of valid medical documentation.
+3.2 No condonation is permitted under any circumstances if attendance drops below 65%.
+3.3 Attendance records are updated weekly on the University Student Portal. Appeals regarding attendance discrepancies must be filed within 7 days of the portal update.
