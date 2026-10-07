@@ -278,8 +278,22 @@ class ModelClient:
             if any(noise in line_upper for noise in form_noise):
                 continue
             line_clean = re.sub(r'^(SECTION\s+\d+:?|[0-9]+\.[0-9]+\s*)', '', line_str, flags=re.IGNORECASE).strip()
-            if len(line_clean) > 20:
-                clean_sentences.append(line_clean)
+            # Sentence-level split for high precision sentence extraction
+            sentences_in_line = re.split(r'(?<=[.!?])\s+', line_clean)
+            for s in sentences_in_line:
+                s_trimmed = s.strip()
+                # Exclude ALL-CAPS section headings and short title blocks
+                if len(s_trimmed) > 18 and not s_trimmed.isupper() and not s_trimmed.isupper():
+                    clean_sentences.append(s_trimmed)
+
+        if not clean_sentences:
+            if is_general_policy_topic(user_query):
+                return self._generate_general_knowledge_answers(user_query, n)
+            return [
+                "Based on the provided policy documents, there is insufficient evidence to answer this question.",
+                "The university policy corpus does not contain specific information regarding this query.",
+                "Insufficient evidence available in the institutional policy repository to provide an answer."
+            ][:n]
 
         # Pure ML 768-dimensional Dense Vector Embedding Cosine Similarity (all-mpnet-base-v2)
         from backend.embeddings.embedding_service import get_embedding_service
@@ -300,51 +314,25 @@ class ModelClient:
             matched_sentences.append((sim_score, s))
 
         matched_sentences.sort(key=lambda x: x[0], reverse=True)
-        max_sim_score = matched_sentences[0][0] if matched_sentences else 0.0
-
-        # Pure ML evidence relevance threshold (CosSim < 0.40 indicates insufficient evidence in context)
-        if max_sim_score < 0.40:
-            if is_general_policy_topic(user_query):
-                return self._generate_general_knowledge_answers(user_query, n)
-            query_topic = user_query.rstrip("?.!\"'").strip()
-            return [
-                f"Based on the uploaded policy documents, there is no information regarding {query_topic}.",
-                f"The institutional policy repository does not contain details about {query_topic}.",
-                f"No policy regulations or details regarding {query_topic} were found in the uploaded evidence.",
-                f"Unable to answer as the policy corpus does not mention {query_topic}.",
-                f"The policy repository provides no evidence regarding {query_topic}."
-            ][:n]
-
-        top_sentences = [s for score, s in matched_sentences if score >= 0.40][:3]
-        if not top_sentences:
-            top_sentences = [s for _, s in matched_sentences[:2]] if matched_sentences else clean_sentences[:2]
 
         if is_permission_query(user_query):
-            return self._generate_permission_compliance_answers(top_sentences, user_query, n)
+            top_rule_sentences = [s for _, s in matched_sentences[:3]]
+            return self._generate_permission_compliance_answers(top_rule_sentences, user_query, n)
 
-        top_sentences = [s for score, s in matched_sentences if score > 0][:3]
-        if not top_sentences:
-            top_sentences = [s for _, s in matched_sentences[:2]] if matched_sentences else ["The policy outlines institutional regulations."]
-
+        top_sentences = [s for _, s in matched_sentences[:3]]
         lead_sentence = top_sentences[0]
-        secondary_sentence = top_sentences[1] if len(top_sentences) > 1 else top_sentences[0]
+        second_sentence = top_sentences[1] if len(top_sentences) > 1 else top_sentences[0]
 
-        lead_fmt = lead_sentence[0].lower() + lead_sentence[1:] if len(lead_sentence) > 1 else lead_sentence
-        sec_fmt = secondary_sentence[0].lower() + secondary_sentence[1:] if len(secondary_sentence) > 1 else secondary_sentence
-
-        templates = [
-            f"According to university policy, {lead_fmt}",
-            f"Based on institutional guidelines, {lead_sentence} Furthermore, regulations state that {sec_fmt}",
-            f"Per official regulations, {lead_sentence} In addition, {sec_fmt}",
-            f"The policy explicitly specifies that {lead_fmt}",
-            f"As stated in institutional regulations, {lead_sentence}"
+        # Direct, highly specific candidates without vague boilerplate mixing
+        candidates = [
+            lead_sentence,
+            f"According to institutional policy, {lead_sentence[0].lower() + lead_sentence[1:] if len(lead_sentence) > 1 else lead_sentence}",
+            f"{lead_sentence} {second_sentence}" if second_sentence != lead_sentence else lead_sentence,
+            f"Per official regulations, {lead_sentence[0].lower() + lead_sentence[1:] if len(lead_sentence) > 1 else lead_sentence}",
+            f"As stated in university guidelines, {lead_sentence}"
         ]
 
-        selected = random.sample(templates, min(n, len(templates)))
-        while len(selected) < n:
-            selected.append(selected[0])
-
-        return selected
+        return candidates[:n]
 
 
 _model_client = None
