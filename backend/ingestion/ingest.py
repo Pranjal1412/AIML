@@ -65,7 +65,7 @@ def extract_header_metadata(text: str) -> Dict[str, Any]:
 
 
 def extract_text_from_file(file_path) -> str:
-    """Extract text content from PDF or TXT file using multi-engine extraction (PyMuPDF -> pdfplumber -> pypdf -> OCR fallback)."""
+    """Extract text content from PDF or TXT file using multi-engine extraction (PyMuPDF -> pdfplumber -> RapidOCR ML Engine)."""
     file_path = Path(file_path)
     ext = file_path.suffix.lower()
     if ext == ".txt":
@@ -74,7 +74,7 @@ def extract_text_from_file(file_path) -> str:
     elif ext == ".pdf":
         extracted_text = []
 
-        # Engine 1: PyMuPDF (fitz) - Fastest & handles complex CID fonts and layout objects
+        # Engine 1: PyMuPDF (fitz) - Native text streams
         try:
             import fitz
             doc = fitz.open(file_path)
@@ -84,12 +84,12 @@ def extract_text_from_file(file_path) -> str:
                 if txt.strip():
                     extracted_text.append(f"\n--- PAGE {page_num + 1} ---\n" + txt)
             full_text = "\n".join(extracted_text).strip()
-            if len(full_text) > 50:
+            if len(full_text) > 100:
                 return full_text
         except Exception as e:
             print(f"[Ingest Engine 1 - PyMuPDF Error]: {e}")
 
-        # Engine 2: pdfplumber - Layout-aware extraction
+        # Engine 2: pdfplumber - Layout text blocks
         try:
             extracted_text = []
             with pdfplumber.open(file_path) as pdf:
@@ -98,48 +98,33 @@ def extract_text_from_file(file_path) -> str:
                     if txt.strip():
                         extracted_text.append(f"\n--- PAGE {page_num} ---\n" + txt)
             full_text = "\n".join(extracted_text).strip()
-            if len(full_text) > 50:
+            if len(full_text) > 100:
                 return full_text
         except Exception as e:
             print(f"[Ingest Engine 2 - pdfplumber Error]: {e}")
 
-        # Engine 3: pypdf - Native stream decoder
-        try:
-            extracted_text = []
-            reader = pypdf.PdfReader(file_path)
-            for page_num, page in enumerate(reader.pages, start=1):
-                txt = page.extract_text() or ""
-                if txt.strip():
-                    extracted_text.append(f"\n--- PAGE {page_num} ---\n" + txt)
-            full_text = "\n".join(extracted_text).strip()
-            if len(full_text) > 50:
-                return full_text
-        except Exception as e:
-            print(f"[Ingest Engine 3 - pypdf Error]: {e}")
-
-        # Engine 4: PyMuPDF OCR Fallback for image-based scanned PDFs
+        # Engine 3: RapidOCR Fallback (Pure Machine Learning OCR over Page Pixmaps)
         try:
             import fitz
-            from PIL import Image
+            from rapidocr_onnxruntime import RapidOCR
+            ocr_engine = RapidOCR()
+
             extracted_text = []
             doc = fitz.open(file_path)
             for page_num in range(len(doc)):
                 page = doc[page_num]
                 pix = page.get_pixmap(dpi=150)
-                img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-                ocr_text = ""
-                try:
-                    import pytesseract
-                    ocr_text = pytesseract.image_to_string(img)
-                except Exception:
-                    pass
-                if ocr_text.strip():
-                    extracted_text.append(f"\n--- PAGE {page_num + 1} ---\n" + ocr_text)
+                img_bytes = pix.tobytes("png")
+                result, _ = ocr_engine(img_bytes)
+                page_ocr_text = " ".join([line[1] for line in result]) if result else ""
+                if page_ocr_text.strip():
+                    extracted_text.append(f"\n--- PAGE {page_num + 1} ---\n" + page_ocr_text)
+
             full_text = "\n".join(extracted_text).strip()
             if len(full_text) > 20:
                 return full_text
         except Exception as e:
-            print(f"[Ingest Engine 4 - OCR Fallback Error]: {e}")
+            print(f"[Ingest Engine 3 - RapidOCR Error]: {e}")
 
         return "\n".join(extracted_text)
     else:
@@ -271,8 +256,15 @@ def process_and_ingest_file(file_path) -> Tuple[List[Dict[str, Any]], Dict[str, 
     file_path = Path(file_path)
     raw_text = extract_text_from_file(file_path)
 
+    # Safely backup original file without corrupting binary format
     backup_path = RAW_DOCS_DIR / file_path.name
-    with open(backup_path, "w", encoding="utf-8") as f:
+    if file_path.resolve() != backup_path.resolve():
+        import shutil
+        shutil.copy2(file_path, backup_path)
+
+    # Save extracted text backup
+    text_backup = RAW_DOCS_DIR / f"{file_path.stem}_extracted.txt"
+    with open(text_backup, "w", encoding="utf-8") as f:
         f.write(raw_text)
 
     header_meta = extract_header_metadata(raw_text)

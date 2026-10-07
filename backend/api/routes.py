@@ -383,9 +383,10 @@ async def api_ingest(
     temp_dir.mkdir(parents=True, exist_ok=True)
     temp_path = temp_dir / file.filename
 
-    with open(temp_path, "wb") as f:
-        content = await file.read()
-        f.write(content)
+    file.file.seek(0)
+    with open(temp_path, "wb") as buffer:
+        import shutil
+        shutil.copyfileobj(file.file, buffer)
 
     try:
         chunks, doc_meta = process_and_ingest_file(temp_path)
