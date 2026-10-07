@@ -254,13 +254,10 @@ class ModelClient:
             return [
                 "Based on the provided policy documents, there is insufficient evidence to answer this question.",
                 "The university policy corpus does not contain specific information regarding this query.",
-                "Insufficient evidence available in the institutional policy repository to provide an answer.",
-                "I am unable to answer as no matching policy regulations were found in the uploaded evidence.",
-                "No relevant institutional policy evidence was found in the indexed repository."
+                "Insufficient evidence available in the institutional policy repository to provide an answer."
             ][:n]
 
         raw_lines = context_text.split("\n")
-        clean_sentences = []
 
         form_noise = [
             "DOCUMENT TITLE:", "DOCUMENT TYPE:", "EFFECTIVE DATE:", "VERSION:", "INSTITUTION:",
@@ -269,6 +266,8 @@ class ModelClient:
             "SUBMITTED BY", "SIGNATURE OF"
         ]
 
+        # Reconstruct broken lines into clean paragraphs before sentence splitting
+        reconstructed_lines = []
         for line in raw_lines:
             line_str = re.sub(r'\[S\d+\]\s*\([^)]*\)', '', line).strip()
             line_str = re.sub(r'===+[^=]+===+', '', line_str).strip()
@@ -278,13 +277,19 @@ class ModelClient:
             if any(noise in line_upper for noise in form_noise):
                 continue
             line_clean = re.sub(r'^(SECTION\s+\d+:?|[0-9]+\.[0-9]+\s*)', '', line_str, flags=re.IGNORECASE).strip()
-            # Sentence-level split for high precision sentence extraction
-            sentences_in_line = re.split(r'(?<=[.!?])\s+', line_clean)
-            for s in sentences_in_line:
-                s_trimmed = s.strip()
-                # Exclude ALL-CAPS section headings and short title blocks
-                if len(s_trimmed) > 18 and not s_trimmed.isupper() and not s_trimmed.isupper():
-                    clean_sentences.append(s_trimmed)
+            if reconstructed_lines and not reconstructed_lines[-1].endswith(('---', '.', '!', '?', ':', ';')) and not line_clean.startswith(('1.', '2.', '3.', '4.', '5.', '6.', '7.', '8.', '9.', 'SECTION', 'CHAPTER')):
+                reconstructed_lines[-1] += " " + line_clean
+            else:
+                reconstructed_lines.append(line_clean)
+
+        reconstructed_text = " ".join(reconstructed_lines)
+        raw_sentences = re.split(r'(?<=[.!?])\s+', reconstructed_text)
+        clean_sentences = []
+        for s in raw_sentences:
+            s_trimmed = s.strip()
+            s_trimmed = re.sub(r'^(SECTION\s+\d+:?|[0-9]+\.[0-9]+\s*)', '', s_trimmed, flags=re.IGNORECASE).strip()
+            if len(s_trimmed) > 18 and not s_trimmed.isupper():
+                clean_sentences.append(s_trimmed)
 
         if not clean_sentences:
             if is_general_policy_topic(user_query):
@@ -323,13 +328,16 @@ class ModelClient:
         lead_sentence = top_sentences[0]
         second_sentence = top_sentences[1] if len(top_sentences) > 1 else top_sentences[0]
 
-        # Direct, highly specific candidates without vague boilerplate mixing
+        lead_fmt = lead_sentence[0].upper() + lead_sentence[1:] if len(lead_sentence) > 1 else lead_sentence
+        second_fmt = second_sentence[0].upper() + second_sentence[1:] if len(second_sentence) > 1 else second_sentence
+
+        # Direct, untruncated candidates with clean capitalization and multi-sentence consensus
         candidates = [
-            lead_sentence,
+            lead_fmt,
             f"According to institutional policy, {lead_sentence[0].lower() + lead_sentence[1:] if len(lead_sentence) > 1 else lead_sentence}",
-            f"{lead_sentence} {second_sentence}" if second_sentence != lead_sentence else lead_sentence,
+            f"{lead_fmt} {second_fmt}" if (second_sentence != lead_sentence and matched_sentences[1][0] >= 0.45) else lead_fmt,
             f"Per official regulations, {lead_sentence[0].lower() + lead_sentence[1:] if len(lead_sentence) > 1 else lead_sentence}",
-            f"As stated in university guidelines, {lead_sentence}"
+            f"As stated in university guidelines, {lead_fmt}"
         ]
 
         return candidates[:n]

@@ -132,9 +132,20 @@ def extract_text_from_file(file_path) -> str:
 
 
 def clean_text(text: str) -> str:
-    """Clean extracted document text: strip headers/footers, de-hyphenate, normalize whitespace."""
+    """Clean extracted document text: strip headers/footers, de-hyphenate, reconstruct sentences across line breaks."""
     text = re.sub(r'(\w+)-\n(\w+)', r'\1\2', text)
-    text = re.sub(r'\n{3,}', '\n\n', text)
+    text = re.sub(r'(\w+)-\s*\n\s*(\w+)', r'\1\2', text)
+    lines = text.split("\n")
+    reconstructed = []
+    for line in lines:
+        line_str = line.strip()
+        if not line_str:
+            continue
+        if reconstructed and not reconstructed[-1].endswith(('---', '.', '!', '?', ':', ';', '===')) and not line_str.startswith(('---', '===', '1.', '2.', '3.', '4.', '5.', '6.', '7.', '8.', '9.', 'SECTION', 'CHAPTER')):
+            reconstructed[-1] += " " + line_str
+        else:
+            reconstructed.append(line_str)
+    text = "\n".join(reconstructed)
     text = re.sub(r'[ \t]+', ' ', text)
     return text.strip()
 
