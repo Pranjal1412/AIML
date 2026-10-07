@@ -65,7 +65,7 @@ def extract_header_metadata(text: str) -> Dict[str, Any]:
 
 
 def extract_text_from_file(file_path) -> str:
-    """Extract text content from PDF or TXT file."""
+    """Extract text content from PDF or TXT file using multi-engine extraction (PyMuPDF -> pdfplumber -> pypdf -> OCR fallback)."""
     file_path = Path(file_path)
     ext = file_path.suffix.lower()
     if ext == ".txt":
@@ -73,18 +73,75 @@ def extract_text_from_file(file_path) -> str:
             return f.read()
     elif ext == ".pdf":
         extracted_text = []
+
+        # Engine 1: PyMuPDF (fitz) - Fastest & handles complex CID fonts and layout objects
         try:
+            import fitz
+            doc = fitz.open(file_path)
+            for page_num in range(len(doc)):
+                page = doc[page_num]
+                txt = page.get_text("text") or ""
+                if txt.strip():
+                    extracted_text.append(f"\n--- PAGE {page_num + 1} ---\n" + txt)
+            full_text = "\n".join(extracted_text).strip()
+            if len(full_text) > 50:
+                return full_text
+        except Exception as e:
+            print(f"[Ingest Engine 1 - PyMuPDF Error]: {e}")
+
+        # Engine 2: pdfplumber - Layout-aware extraction
+        try:
+            extracted_text = []
             with pdfplumber.open(file_path) as pdf:
                 for page_num, page in enumerate(pdf.pages, start=1):
                     txt = page.extract_text() or ""
-                    extracted_text.append(f"\n--- PAGE {page_num} ---\n" + txt)
-            return "\n".join(extracted_text)
-        except Exception:
+                    if txt.strip():
+                        extracted_text.append(f"\n--- PAGE {page_num} ---\n" + txt)
+            full_text = "\n".join(extracted_text).strip()
+            if len(full_text) > 50:
+                return full_text
+        except Exception as e:
+            print(f"[Ingest Engine 2 - pdfplumber Error]: {e}")
+
+        # Engine 3: pypdf - Native stream decoder
+        try:
+            extracted_text = []
             reader = pypdf.PdfReader(file_path)
             for page_num, page in enumerate(reader.pages, start=1):
                 txt = page.extract_text() or ""
-                extracted_text.append(f"\n--- PAGE {page_num} ---\n" + txt)
-            return "\n".join(extracted_text)
+                if txt.strip():
+                    extracted_text.append(f"\n--- PAGE {page_num} ---\n" + txt)
+            full_text = "\n".join(extracted_text).strip()
+            if len(full_text) > 50:
+                return full_text
+        except Exception as e:
+            print(f"[Ingest Engine 3 - pypdf Error]: {e}")
+
+        # Engine 4: PyMuPDF OCR Fallback for image-based scanned PDFs
+        try:
+            import fitz
+            from PIL import Image
+            extracted_text = []
+            doc = fitz.open(file_path)
+            for page_num in range(len(doc)):
+                page = doc[page_num]
+                pix = page.get_pixmap(dpi=150)
+                img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+                ocr_text = ""
+                try:
+                    import pytesseract
+                    ocr_text = pytesseract.image_to_string(img)
+                except Exception:
+                    pass
+                if ocr_text.strip():
+                    extracted_text.append(f"\n--- PAGE {page_num + 1} ---\n" + ocr_text)
+            full_text = "\n".join(extracted_text).strip()
+            if len(full_text) > 20:
+                return full_text
+        except Exception as e:
+            print(f"[Ingest Engine 4 - OCR Fallback Error]: {e}")
+
+        return "\n".join(extracted_text)
     else:
         raise ValueError(f"Unsupported file extension: {ext}")
 
