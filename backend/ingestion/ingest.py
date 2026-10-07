@@ -189,7 +189,9 @@ def chunk_document(
 
         # Structural section header check
         if structural_heading_pattern.match(line_str) and len(line_str) < 120:
-            current_section = line_str
+            heading_upper = line_str.upper()
+            if not any(noise in heading_upper for noise in ["PLACE:", "DATE:", "SIGNATURE", "UNDERTAKING", "DECLARATION", "FORM", "ROLL NO"]):
+                current_section = line_str
 
         words = line_str.split()
         current_chunk_lines.append(line_str)

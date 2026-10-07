@@ -285,10 +285,13 @@ class ModelClient:
         reconstructed_text = " ".join(reconstructed_lines)
         raw_sentences = re.split(r'(?<=[.!?])\s+', reconstructed_text)
         clean_sentences = []
+        form_template_terms = ["hereby affirm", "signature of", "place: , date", "undertaking signed by", "signed by my ward"]
         for s in raw_sentences:
             s_trimmed = s.strip()
             s_trimmed = re.sub(r'^(SECTION\s+\d+:?|[0-9]+\.[0-9]+\s*)', '', s_trimmed, flags=re.IGNORECASE).strip()
-            if len(s_trimmed) > 18 and not s_trimmed.isupper():
+            s_lower = s_trimmed.lower()
+            # Exclude ALL-CAPS headings, form templates, and orphaned verb fragments without subjects
+            if len(s_trimmed) > 18 and not s_trimmed.isupper() and not any(term in s_lower for term in form_template_terms) and not s_lower.startswith(('may be ', 'is required ', 'shall be ')):
                 clean_sentences.append(s_trimmed)
 
         if not clean_sentences:
