@@ -281,24 +281,32 @@ class ModelClient:
             if len(line_clean) > 20:
                 clean_sentences.append(line_clean)
 
-        stop_words = ["what", "where", "when", "which", "how", "does", "with", "from", "the", "this", "that", "could", "would", "should", "policy", "official", "university", "regarding", "student", "students", "manual", "latest", "revision", "about"]
-        q_words = [w.lower() for w in user_query.split() if len(w) > 3 and w.lower() not in stop_words]
-        if not q_words:
-            q_words = [w.lower() for w in user_query.split() if len(w) > 3]
+        # Pure ML 768-dimensional Dense Vector Embedding Cosine Similarity (all-mpnet-base-v2)
+        from backend.embeddings.embedding_service import get_embedding_service
+        import numpy as np
+
+        emb_service = get_embedding_service()
+        query_vec = np.array(emb_service.encode_single(user_query))
+        query_norm = query_vec / (np.linalg.norm(query_vec) + 1e-9)
+
+        sentence_vecs = np.array(emb_service.encode(clean_sentences))
+        sentence_norms = sentence_vecs / (np.linalg.norm(sentence_vecs, axis=1, keepdims=True) + 1e-9)
+
+        cosine_sims = np.dot(sentence_norms, query_norm)
 
         matched_sentences = []
-        for s in clean_sentences:
-            s_lower = s.lower()
-            score = sum(1 for qw in q_words if qw in s_lower)
-            matched_sentences.append((score, s))
+        for idx, s in enumerate(clean_sentences):
+            sim_score = float(cosine_sims[idx])
+            matched_sentences.append((sim_score, s))
 
         matched_sentences.sort(key=lambda x: x[0], reverse=True)
-        max_score = matched_sentences[0][0] if matched_sentences else 0
+        max_sim_score = matched_sentences[0][0] if matched_sentences else 0.0
 
-        if max_score == 0 and len(q_words) > 0:
+        # Pure ML evidence relevance threshold (CosSim < 0.40 indicates insufficient evidence in context)
+        if max_sim_score < 0.40:
             if is_general_policy_topic(user_query):
                 return self._generate_general_knowledge_answers(user_query, n)
-            query_topic = user_query.rstrip("?.!\"'").replace("what are ", "").replace("who is ", "").replace("what is ", "").strip()
+            query_topic = user_query.rstrip("?.!\"'").strip()
             return [
                 f"Based on the uploaded policy documents, there is no information regarding {query_topic}.",
                 f"The institutional policy repository does not contain details about {query_topic}.",
@@ -307,7 +315,7 @@ class ModelClient:
                 f"The policy repository provides no evidence regarding {query_topic}."
             ][:n]
 
-        top_sentences = [s for score, s in matched_sentences if score > 0][:3]
+        top_sentences = [s for score, s in matched_sentences if score >= 0.40][:3]
         if not top_sentences:
             top_sentences = [s for _, s in matched_sentences[:2]] if matched_sentences else clean_sentences[:2]
 
