@@ -36,39 +36,27 @@ def requires_institution_specific_fact(query: str) -> bool:
     """Check if query requires specific institution facts (dates, numbers, deadlines, named people)."""
     q_lower = query.lower()
     fact_keywords = ["deadline", "fee", "stipend", "gpa", "hours", "percent", "%", "fine", "dollar", "$", "date", "phone", "email"]
-    if any(k in q_lower for k in fact_keywords):
-        return True
+    for k in fact_keywords:
+        if k == "%" or k == "$":
+            if k in q_lower:
+                return True
+        else:
+            if re.search(r'\b' + re.escape(k) + r'\b', q_lower):
+                return True
     if re.search(r'\b(how many|how much|when is|what is the deadline|what is the fee|what is the stipend)\b', q_lower):
         return True
     return False
 
 
 def is_general_policy_topic(query: str) -> bool:
-    """Check if query is a general academic-policy concept (Section 9 PDF spec)."""
-    q_lower = query.lower()
-
-    # Exclude trivia, people, location, and founding questions
-    trivia_patterns = [
-        r'\bwho\s+is\s+(the\s+)?(founder|owner|president|ceo|inventor|author|creator|head)\b',
-        r'\bwhere\s+is\b', r'\bwhen\s+was\s+(founded|built|established)\b',
-        r'\bcapital\s+of\b', r'\bpopulation\s+of\b'
-    ]
-    if any(re.search(pat, q_lower) for pat in trivia_patterns):
-        return False
-
-    general_topics = [
-        "appeal", "plagiarism", "probation", "attendance", "grading", "conduct", "syllabus",
-        "credit", "semester", "academic policy", "exam", "grade", "gpa", "major", "minor",
-        "thesis", "dissertation", "prerequisite", "transcript", "tuition", "scholarship",
-        "financial aid", "internship", "graduation", "enrollment", "expulsion", "suspension",
-        "dormitory", "residence hall", "office hour", "retire", "tenure", "academic integrity",
-        "lab", "safety", "goggles", "waiver", "cloud", "storage", "quad", "event", "permit",
-        "re-checking", "re-evaluation", "incomplete", "hostel", "microwave", "appliance",
-        "hospitalization", "medical", "leave", "absence", "dress code", "uniform", "ragging",
-        "fee", "installment", "refund", "cancellation", "immersion", "placement", "contest",
-        "bonafide", "certificate", "id card", "identity", "code of conduct"
-    ]
-    return any(t in q_lower for t in general_topics)
+    """
+    Check if query is an academic-policy concept using Machine Learning Vector Embeddings.
+    Uses 768-dimensional Cosine Vector Classifier (SentenceTransformers) without hardcoded keyword lists.
+    """
+    from backend.policy.ml_domain_classifier import get_ml_domain_classifier
+    classifier = get_ml_domain_classifier()
+    is_academic, prob, _ = classifier.classify_query(query)
+    return is_academic
 
 
 def is_permission_query(query: str) -> bool:

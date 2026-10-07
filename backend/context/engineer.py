@@ -24,8 +24,14 @@ def rewrite_query_for_round(query: str, round_no: int) -> str:
     if any(p in q_lower for p in ["can i", "could i", "allowed", "permitted", "prohibited", "against policy", "may i", "violation", "illegal"]):
         expansions.append("prohibited allowed permitted policy restriction penalty rule requirement approval consent")
 
-    if round_no <= 1 and not expansions:
-        return query
+    if any(p in q_lower for p in ["who to talk to", "who to contact", "who do i talk to", "where to go", "contact for", "reach out", "talk to", "contact person", "whom to contact"]):
+        expansions.append("contact department office mentor ssw student service wing account escalation matrix officer director student affairs")
+
+    if "fee" in q_lower or "tuition" in q_lower or "installment" in q_lower or "payment" in q_lower:
+        expansions.append("account department fees payment erp ssw student service wing financial installment refund extension")
+
+    if any(p in q_lower for p in ["punishment", "penalty", "property", "damage", "violation", "sanction", "fine"]):
+        expansions.append("property damage willful negligent damage university property penalty punishment code of conduct violation 15 days suspension expulsion deliberate actions")
 
     if "attendance" in q_lower:
         expansions.append("absence limits medical leave condonation mandatory percentage")

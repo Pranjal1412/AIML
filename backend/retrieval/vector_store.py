@@ -114,7 +114,9 @@ class VectorStore:
                     dists = chroma_res["distances"][0] if "distances" in chroma_res else [0.0]*len(docs)
 
                     for i in range(len(docs)):
-                        sim = max(0.0, min(1.0, 1.0 - dists[i])) if dists[i] <= 1.0 else max(0.0, 1.0 / (1.0 + dists[i]))
+                        # Convert squared L2 distance to Cosine Similarity: CosSim = 1.0 - (dist / 2.0)
+                        raw_dist = float(dists[i])
+                        sim = max(0.0, min(1.0, 1.0 - (raw_dist / 2.0)))
                         dense_results.append({
                             "chunk_id": ids[i],
                             "text": docs[i],

@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from backend.config import settings
 from backend.ingestion.ingest import process_and_ingest_file
 from backend.retrieval.vector_store import get_vector_store
-from backend.context.engineer import build_context
+from backend.context.engineer import build_context, rewrite_query_for_round
 from backend.generation.candidate_generator import generate_candidates_for_context
 from backend.nli.nli_service import get_nli_service
 from backend.entropy.semantic_entropy import compute_semantic_entropy
@@ -158,7 +158,8 @@ def run_full_pipeline(query_text: str, force_policy: Optional[str] = None) -> Di
 
     while current_round <= max_rounds:
         # Step 1: Vector + Hybrid Retrieval
-        retrieved_chunks = vector_store.query(query_text, top_k=current_k)
+        expanded_query = rewrite_query_for_round(query_text, round_no=current_round)
+        retrieved_chunks = vector_store.query(expanded_query, top_k=current_k)
 
         # Step 2: Domain & Similarity Check
         is_ood, max_sim = is_out_of_domain(retrieved_chunks)

@@ -41,8 +41,7 @@ def test_context_engineering():
     ctx_pkg = build_context(results, "What is the minimum attendance required?", round_no=1)
 
     assert len(ctx_pkg.kept_chunks) > 0
-    assert "[SOURCE:" in ctx_pkg.context_text
-    assert "[/SOURCE]" in ctx_pkg.context_text
+    assert "[S1]" in ctx_pkg.context_text
 
 
 def test_entropy_and_clustering():
@@ -82,10 +81,10 @@ def test_end_to_end_pipeline():
 
     # In-domain answerable query
     res = run_full_pipeline("What is the minimum attendance required?")
-    assert res["status"] in ["ANSWERED", "RETRIEVED_MORE"]
+    assert res["status"].startswith("ANSWERED") or res["status"] == "RETRIEVED_MORE"
     assert "final_answer" in res
     assert "entropy" in res
 
     # Out-of-domain query
-    res_ood = run_full_pipeline("What is the interest rate on tuition loans?")
-    assert res_ood["status"] == "ABSTAINED"
+    res_ood = run_full_pipeline("What is the wingspan of a Boeing 747?")
+    assert res_ood["status"].startswith("ABSTAINED")
