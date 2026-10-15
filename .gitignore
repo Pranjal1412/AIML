@@ -19,6 +19,7 @@ __pycache__/
 # Vector store storage & logs
 storage/chromadb/
 storage/temp_uploads/
+storage/raw_docs/
 storage/*.db
 *.log
 
