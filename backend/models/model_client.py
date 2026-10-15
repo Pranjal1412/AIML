@@ -331,21 +331,16 @@ class ModelClient:
         lead_sentence = top_sentences[0]
         second_sentence = top_sentences[1] if len(top_sentences) > 1 else top_sentences[0]
 
-        lead_clean = lead_sentence.strip()
-        lead_fmt = lead_clean[0].upper() + lead_clean[1:] if len(lead_clean) > 1 else lead_clean
+        lead_fmt = lead_sentence[0].upper() + lead_sentence[1:] if len(lead_sentence) > 1 else lead_sentence
         second_fmt = second_sentence[0].upper() + second_sentence[1:] if len(second_sentence) > 1 else second_sentence
 
-        # Clean up raw undertaking pronouns ("I / My ward will not..." -> "Students are prohibited from...")
-        clean_lead = re.sub(r'^\s*(i\s*/?\s*my\s*ward\s*will\s*not|we\s*hereby\s*affirm\s*that)\s*', 'Students must not ', lead_fmt, flags=re.IGNORECASE)
-        clean_lead = clean_lead[0].upper() + clean_lead[1:] if len(clean_lead) > 1 else clean_lead
-
-        # Direct, proper natural language policy answers
+        # Direct, untruncated candidates with clean capitalization and multi-sentence consensus
         candidates = [
-            clean_lead,
-            f"According to institutional policy, {clean_lead[0].lower() + clean_lead[1:] if len(clean_lead) > 1 else clean_lead}",
-            f"{clean_lead} {second_fmt}" if (second_sentence != lead_sentence and matched_sentences[1][0] >= 0.45) else clean_lead,
-            f"Per official regulations, {clean_lead[0].lower() + clean_lead[1:] if len(clean_lead) > 1 else clean_lead}",
-            f"As stated in university guidelines, {clean_lead}"
+            lead_fmt,
+            f"According to institutional policy, {lead_sentence[0].lower() + lead_sentence[1:] if len(lead_sentence) > 1 else lead_sentence}",
+            f"{lead_fmt} {second_fmt}" if (second_sentence != lead_sentence and matched_sentences[1][0] >= 0.45) else lead_fmt,
+            f"Per official regulations, {lead_sentence[0].lower() + lead_sentence[1:] if len(lead_sentence) > 1 else lead_sentence}",
+            f"As stated in university guidelines, {lead_fmt}"
         ]
 
         return candidates[:n]
