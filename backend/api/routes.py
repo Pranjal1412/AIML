@@ -2,6 +2,7 @@ import uuid
 import math
 from pathlib import Path
 from typing import Dict, Any, List, Optional
+import numpy as np
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from pydantic import BaseModel
 
@@ -163,23 +164,25 @@ def run_full_pipeline(query_text: str, force_policy: Optional[str] = None) -> Di
 
         # Step 2: Domain & Similarity Check
         is_ood, max_sim = is_out_of_domain(retrieved_chunks)
+        query_is_policy = is_general_policy_topic(query_text)
 
         # Section 9 PDF Spec & Section 5 Retrieval Regression Fix: 3-Mode Routing Evaluation
+        if current_round == 1 and not query_is_policy:
+            # Distinct out-of-scope message per Section 5 PDF spec
+            routing_mode = "abstain"
+            action_taken_str = "ABSTAIN"
+            final_answer = "This assistant answers questions about academic policy and institutional regulations. That question is outside its scope."
+            decision_factors = [
+                f"Out-of-scope question detected ('{query_text}')",
+                f"ML domain classifier determined query is outside academic policy domain (retrieval similarity: {max_sim:.4f})"
+            ]
+            last_entropy_result = compute_semantic_entropy([], [])
+            last_nli_matrix = []
+            last_state_vec = [0.0]*9
+            break
+
         if max_sim < settings.retrieval.min_evidence_similarity and current_round == 1:
-            if not requires_institution_specific_fact(query_text) and not is_general_policy_topic(query_text):
-                # Distinct out-of-scope message per Section 5 PDF spec
-                routing_mode = "abstain"
-                action_taken_str = "ABSTAIN"
-                final_answer = "This assistant answers questions about academic policy and institutional regulations. That question is outside its scope."
-                decision_factors = [
-                    f"Out-of-scope question detected ('{query_text}')",
-                    f"Retrieval similarity ({max_sim:.4f}) below MIN_EVIDENCE_SIMILARITY ({settings.retrieval.min_evidence_similarity})"
-                ]
-                last_entropy_result = compute_semantic_entropy([], [])
-                last_nli_matrix = []
-                last_state_vec = [0.0]*9
-                break
-            elif is_general_policy_topic(query_text) and not requires_institution_specific_fact(query_text):
+            if not requires_institution_specific_fact(query_text):
                 # Mode 2: General Knowledge Fallback
                 routing_mode = "general_knowledge"
             else:
@@ -270,9 +273,23 @@ def run_full_pipeline(query_text: str, force_policy: Optional[str] = None) -> Di
                 sources_metadata = []
                 decision_factors.append("Unevidenced candidate completion detected — converted to ABSTAIN")
             elif entropy_res.normalized_entropy <= settings.entropy.entropy_high_threshold and max_sim >= settings.retrieval.min_evidence_similarity:
-                routing_mode = "grounded"
-                final_answer = candidate_text
-                sources_metadata = context_pkg.sources_metadata
+                # Semantic relevance verification: Candidate answer must semantically address the query
+                from backend.embeddings.embedding_service import get_embedding_service
+                emb_svc = get_embedding_service()
+                q_emb = np.array(emb_svc.encode_single(query_text))
+                ans_emb = np.array(emb_svc.encode_single(candidate_text))
+                qa_sim = float(np.dot(q_emb, ans_emb) / ((np.linalg.norm(q_emb) * np.linalg.norm(ans_emb)) + 1e-9))
+
+                if qa_sim < 0.48:
+                    action_str = "ABSTAIN"
+                    routing_mode = "abstain"
+                    final_answer = "This information isn't available in the ingested documents. Try re-ingesting the relevant document, or rephrase the question."
+                    sources_metadata = []
+                    decision_factors.append(f"Candidate answer lacks semantic relevance to query (similarity {qa_sim:.4f} < 0.48) — converted to ABSTAIN")
+                else:
+                    routing_mode = "grounded"
+                    final_answer = candidate_text
+                    sources_metadata = context_pkg.sources_metadata
             else:
                 action_str = "ABSTAIN"
                 routing_mode = "abstain"

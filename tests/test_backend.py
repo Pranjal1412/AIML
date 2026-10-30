@@ -85,6 +85,15 @@ def test_end_to_end_pipeline():
     assert "final_answer" in res
     assert "entropy" in res
 
-    # Out-of-domain query
+    # Out-of-domain query (trivia)
     res_ood = run_full_pipeline("What is the wingspan of a Boeing 747?")
     assert res_ood["status"].startswith("ABSTAINED")
+
+    # Out-of-domain queries (personal / domestic)
+    res_birthday = run_full_pipeline("When is my birthday?")
+    assert res_birthday["status"].startswith("ABSTAINED")
+    assert res_birthday["action_taken"] == "ABSTAIN"
+
+    res_divorce = run_full_pipeline("How do i apply for divorce?")
+    assert res_divorce["status"].startswith("ABSTAINED")
+    assert res_divorce["action_taken"] == "ABSTAIN"

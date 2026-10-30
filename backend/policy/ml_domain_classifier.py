@@ -39,7 +39,12 @@ class MLDomainClassifier:
             "aerospace engineering, boeing aircraft specifications, wingspans, aviation, flight technology, planes",
             "cooking recipes, restaurant reviews, food cuisine, baking ingredients, culinary arts",
             "physics, astronomy, speed of light, planetary orbits, quantum mechanics, solar system",
-            "biology trivia, animal species, wildlife, dinosaurs, zoology, nature facts"
+            "biology trivia, animal species, wildlife, dinosaurs, zoology, nature facts",
+            "personal life events, date of birth, my birthday, age, personal family matters, individual biography",
+            "domestic relations, divorce application, marriage certificate, matrimonial law, custody battle, family court, personal civil litigation",
+            "personal medical diagnosis, disease symptoms, prescription medication, health treatment, doctor visits",
+            "personal shopping, consumer electronics, smartphones, vehicle purchases, cryptocurrency trading, stock investments",
+            "personal relationship advice, dating tips, casual social conversation, jokes, weather forecast"
         ]
 
         self._initialize_centroids()
@@ -81,12 +86,13 @@ class MLDomainClassifier:
         exp_triv = np.exp(sim_trivia / self.temperature)
         academic_prob = float(exp_acad / (exp_acad + exp_triv + 1e-9))
 
-        # A query is in-domain academic policy if academic vector centroid similarity > trivia centroid similarity
-        # OR if vector store evidence similarity >= min_evidence_similarity (0.55)
-        if sim_trivia > sim_academic and max_corpus_sim < settings.retrieval.min_evidence_similarity:
+        # Pure Machine Learning vector centroid classification:
+        # Query is in-domain academic policy if academic vector centroid similarity >= trivia centroid similarity,
+        # OR if direct vector store evidence similarity >= 0.80 (near-verbatim document excerpt)
+        if sim_trivia > sim_academic and max_corpus_sim < 0.80:
             is_academic = False
         else:
-            is_academic = (academic_prob >= 0.50) or (max_corpus_sim >= settings.retrieval.min_evidence_similarity)
+            is_academic = (academic_prob >= 0.50) or (max_corpus_sim >= 0.80)
 
         scores = {
             "academic_similarity": round(float(sim_academic), 4),
